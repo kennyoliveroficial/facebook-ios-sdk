@@ -8,24 +8,14 @@
 
 #import "FBSDKGraphRequestConnection+Internal.h"
 
-#import <FBSDKCoreKit/FBSDKCoreKit.h>
-#import <FBSDKCoreKit/FBSDKGraphRequestConnectionDelegate.h>
+#import <FBSDKCoreKit/FBSDKCoreKit-Swift.h>
 
-#import "FBSDKAccessToken.h"
-#import "FBSDKAuthenticationToken.h"
-#import "FBSDKCoreKitVersions.h"
-#import "FBSDKErrorConfigurationProvider.h"
 #import "FBSDKErrorRecoveryAttempter.h"
 #import "FBSDKGraphRequest+Internal.h"
 #import "FBSDKGraphRequestBody.h"
-#import "FBSDKGraphRequestConnectionFactoryProtocol.h"
-#import "FBSDKGraphRequestDataAttachment.h"
 #import "FBSDKInternalUtility+Internal.h"
 #import "FBSDKLogger+Internal.h"
-#import "FBSDKOperatingSystemVersionComparing.h"
 #import "FBSDKSafeCast.h"
-#import "FBSDKSettingsProtocol.h"
-#import "FBSDKURLSessionProxying.h"
 
 NSString *const FBSDKNonJSONResponseProperty = @"FACEBOOK_NON_JSON_RESULT";
 
@@ -41,13 +31,8 @@ static NSString *const kBatchFileNamePrefix = @"file";
 static NSString *const kBatchEntryName = @"name";
 
 static NSString *const kAccessTokenKey = @"access_token";
-#if TARGET_OS_TV
-static NSString *const kSDK = @"tvos";
-static NSString *const kUserAgentBase = @"FBtvOSSDK";
-#else
 static NSString *const kSDK = @"ios";
 static NSString *const kUserAgentBase = @"FBiOSSDK";
-#endif
 static NSString *const kBatchRestMethodBaseURL = @"method/";
 
 static NSTimeInterval g_defaultTimeout = 60.0;
@@ -80,11 +65,7 @@ static FBSDKAccessToken *_Nullable _CreateExpiredAccessToken(FBSDKAccessToken *a
 // Private properties and methods
 
 @interface FBSDKGraphRequestConnection ()
-#if TARGET_OS_TV
-<NSURLSessionDataDelegate>
-#else
 <NSURLSessionDataDelegate, FBSDKGraphErrorRecoveryProcessorDelegate>
-#endif
 
 @property (class, nonatomic) BOOL hasBeenConfigured;
 
@@ -109,7 +90,6 @@ static id<FBSDKEventLogging> _eventLogger;
 static id<FBSDKOperatingSystemVersionComparing> _operatingSystemVersionComparer;
 static id<FBSDKMacCatalystDetermining> _macCatalystDeterminator;
 static Class<FBSDKAccessTokenProviding> _accessTokenProvider;
-static Class<FBSDKAccessTokenSetting> _accessTokenSetter;
 static id<FBSDKErrorCreating> _errorFactory;
 static Class<FBSDKAuthenticationTokenProviding> _authenticationTokenProvider;
 
@@ -213,16 +193,6 @@ static Class<FBSDKAuthenticationTokenProviding> _authenticationTokenProvider;
   _accessTokenProvider = accessTokenProvider;
 }
 
-+ (nullable Class<FBSDKAccessTokenSetting>)accessTokenSetter
-{
-  return _accessTokenSetter;
-}
-
-+ (void)setAccessTokenSetter:(nullable Class<FBSDKAccessTokenSetting>)accessTokenSetter
-{
-  _accessTokenSetter = accessTokenSetter;
-}
-
 + (nullable id<FBSDKErrorCreating>)errorFactory
 {
   return _errorFactory;
@@ -252,7 +222,6 @@ static Class<FBSDKAuthenticationTokenProviding> _authenticationTokenProvider;
              operatingSystemVersionComparer:(nonnull id<FBSDKOperatingSystemVersionComparing>)operatingSystemVersionComparer
                     macCatalystDeterminator:(nonnull id<FBSDKMacCatalystDetermining>)macCatalystDeterminator
                         accessTokenProvider:(nonnull Class<FBSDKAccessTokenProviding>)accessTokenProvider
-                          accessTokenSetter:(nonnull Class<FBSDKAccessTokenSetting>)accessTokenSetter
                                errorFactory:(nonnull id<FBSDKErrorCreating>)errorFactory
                 authenticationTokenProvider:(nonnull Class<FBSDKAuthenticationTokenProviding>)authenticationTokenProvider
 {
@@ -269,14 +238,13 @@ static Class<FBSDKAuthenticationTokenProviding> _authenticationTokenProvider;
   self.operatingSystemVersionComparer = operatingSystemVersionComparer;
   self.macCatalystDeterminator = macCatalystDeterminator;
   self.accessTokenProvider = accessTokenProvider;
-  self.accessTokenSetter = accessTokenSetter;
   self.errorFactory = errorFactory;
   self.authenticationTokenProvider = authenticationTokenProvider;
 
   self.hasBeenConfigured = YES;
 }
 
-#if DEBUG && FBTEST
+#if DEBUG
 
 + (void)resetClassDependencies
 {
@@ -290,7 +258,6 @@ static Class<FBSDKAuthenticationTokenProviding> _authenticationTokenProvider;
   self.operatingSystemVersionComparer = nil;
   self.macCatalystDeterminator = nil;
   self.accessTokenProvider = nil;
-  self.accessTokenSetter = nil;
   self.errorFactory = nil;
   self.authenticationTokenProvider = nil;
 }
@@ -1011,9 +978,9 @@ static Class<FBSDKAuthenticationTokenProviding> _authenticationTokenProvider;
       return;
     }
     if (errorSubcode == 493) {
-      [self.class.accessTokenSetter setCurrentAccessToken:_CreateExpiredAccessToken([self.class.accessTokenProvider currentAccessToken])];
+      [self.class.accessTokenProvider setCurrentAccessToken:_CreateExpiredAccessToken([self.class.accessTokenProvider currentAccessToken])];
     } else {
-      [self.class.accessTokenSetter setCurrentAccessToken:nil];
+      [self.class.accessTokenProvider setCurrentAccessToken:nil];
     }
   };
 
@@ -1318,7 +1285,7 @@ static Class<FBSDKAuthenticationTokenProviding> _authenticationTokenProvider;
     agentWithSuffix = [NSString stringWithFormat:@"%@/%@", agent, self.class.settings.userAgentSuffix];
   }
   if (@available(iOS 13.0, *)) {
-    if (self.class.macCatalystDeterminator.isMacCatalystApp) {
+    if (self.class.macCatalystDeterminator.fb_isMacCatalystApp) {
       return [NSString stringWithFormat:@"%@/%@", agentWithSuffix ?: agent, @"macOS"];
     }
   }
@@ -1398,7 +1365,7 @@ static Class<FBSDKAuthenticationTokenProviding> _authenticationTokenProvider;
 
 // MARK: - Testability
 
-#if DEBUG && FBTEST
+#if DEBUG
 
 /// Resets the default connection timeout to 60 seconds
 + (void)resetDefaultConnectionTimeout

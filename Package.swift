@@ -19,10 +19,7 @@ import Darwin.C
 
 let package = Package(
     name: "Facebook",
-    platforms: [
-        .iOS(.v10),
-        .tvOS(.v10)
-    ],
+    platforms: [.iOS(.v12)],
     products: [
         // The Kernel of the SDK. Must be included as a runtime dependency.
         .basics,
@@ -51,9 +48,6 @@ let package = Package(
 
         // The Facebook Gaming Services SDK
         .gaming,
-
-        // The Facebook tvOS SDK.
-        .tv,
     ],
     targets: [
         // The kernel of the SDK
@@ -103,12 +97,6 @@ let package = Package(
 
         // The main Facebook Gaming Services module
         .gaming,
-
-        // The tvOS-specific SDK with an FBSDK-prefixed name.
-        .Prefixed.tv,
-
-        // The tvOS-specific SDK.
-        .tv,
     ],
     cxxLanguageStandard: .cxx11
 )
@@ -120,7 +108,6 @@ extension Product {
     static let share = library(name: .share, targets: [.share, .Prefixed.share])
     static let gaming = library(name: .gaming, targets: [.gaming, .Prefixed.gaming])
     static let aem = library(name: .aem, targets: [.aem, .Prefixed.aem])
-    static let tv = library(name: .tv, targets: [.tv])
 }
 
 extension Target {
@@ -147,7 +134,7 @@ extension Target {
     }
 
     static func remoteBinaryURLString(for targetName: String) -> String {
-        "https://github.com/facebook/facebook-ios-sdk/releases/download/v13.0.0/\(targetName)-Static_XCFramework.zip"
+        "https://github.com/facebook/facebook-ios-sdk/releases/download/v16.3.1/\(targetName)-Static_XCFramework.zip"
     }
 
     static let aem = target(name: .aem, dependencies: [.Prefixed.aem])
@@ -168,42 +155,35 @@ extension Target {
 
     static let gaming = target(name: .gaming, dependencies: [.Prefixed.gaming])
 
-    static let tv = target(name: .tv, dependencies: [.Prefixed.tv])
-
     enum Prefixed {
         static let basics = binaryTarget(
             name: .Prefixed.basics,
-            remoteChecksum: "b014f2237a65a1433a919f42f37181b9f36477de2d367a2d20859d3e21f79e1b"
+            remoteChecksum: "b09263314beecd42ec735b2294cb783a3130e7a730817847a98f23e47050fbca"
         )
 
         static let aem = binaryTarget(
             name: .Prefixed.aem,
-            remoteChecksum: "7b37769c1799c8ac3094506b2b7127ea79d7002585cb9594c55b47b9c5c86fcb"
+            remoteChecksum: "e15cac49f9a4faf61b4a6283957d9bff7a5b8dc9610fd731049d1a6a6183b705"
         )
 
         static let core = binaryTarget(
             name: .Prefixed.core,
-            remoteChecksum: "227de8a77e0ea1fb2f2a7bad8f1b954606b40c159cb69c53f5677098b66e5738"
+            remoteChecksum: "60fb77ce96184325479400afdca9ea798c4d278bcd63e1551b7a938b7f8425e1"
         )
 
         static let login = binaryTarget(
             name: .Prefixed.login,
-            remoteChecksum: "d93692d0b54a991423598bc9745e82449f80933779136a9c61d210e351951101"
+            remoteChecksum: "c15f770a240848b893b03c21bff2090ab9b9a61ea52589d0868bcfe92bbfe458"
         )
 
         static let share = binaryTarget(
             name: .Prefixed.share,
-            remoteChecksum: "131af9a4326aeecc808b1e031541ef1bdf560e0c596bf8adce8d8bcbc2ce4d6b"
+            remoteChecksum: "2795b44c28bbd18a306bff10aa809121987b0bd958bb71ceae7ecf32f0c907b4"
         )
 
         static let gamingServices = binaryTarget(
             name: .Prefixed.gaming,
-            remoteChecksum: "2a9b252e0bb526bb6e2b51e4c41b54ce3f598d1f1c0751766a35a3dc8fb9ceb5"
-        )
-
-        static let tv = binaryTarget(
-            name: .Prefixed.tv,
-            remoteChecksum: "254d71299e55273b8a9e471f41906ecb4418138953825a773f375aa3a31b3ae9"
+            remoteChecksum: "59a04242968a10e87d91477204cbeed3e015f637ed4953ccf337be032e6613aa"
         )
     }
 }
@@ -219,7 +199,6 @@ extension Target.Dependency {
         static let login = byName(name: .Prefixed.login)
         static let share = byName(name: .Prefixed.share)
         static let gaming = byName(name: .Prefixed.gaming)
-        static let tv = byName(name: .Prefixed.tv)
     }
 }
 
@@ -248,7 +227,6 @@ extension String {
     static let login = "FacebookLogin"
     static let share = "FacebookShare"
     static let gaming = "FacebookGamingServices"
-    static let tv = "FacebookTV"
 
     enum Prefixed {
         static let aem = "FBAEMKit"
@@ -257,6 +235,5 @@ extension String {
         static let login = "FBSDKLoginKit"
         static let share = "FBSDKShareKit"
         static let gaming = "FBSDKGamingServicesKit"
-        static let tv = "FBSDKTVOSKit"
     }
 }

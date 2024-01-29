@@ -86,7 +86,7 @@ final class SharePhotoContentTests: XCTestCase {
   }
 
   func testValidationWithoutPhotos() {
-    validator.stubbedValidateArrayShouldThrow = true
+    validator.validateArrayShouldThrow = true
     content = SharePhotoContent()
 
     XCTAssertThrowsError(try content.validate(options: []), .validationValidatesPhotos)
@@ -137,6 +137,8 @@ final class SharePhotoContentTests: XCTestCase {
     ]
   }
 }
+
+// swiftformat:disable extensionaccesscontrol
 
 // MARK: - Assumptions
 

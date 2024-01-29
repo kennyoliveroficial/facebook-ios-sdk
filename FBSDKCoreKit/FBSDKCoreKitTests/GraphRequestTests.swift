@@ -15,7 +15,7 @@ final class GraphRequestTests: XCTestCase {
 
   let path = "me"
   let parameters = ["fields": ""]
-  let version = "v13.0"
+  let version = "v16.0"
   let prefix = "graph."
   let settings = TestSettings()
   var factory = TestGraphRequestConnectionFactory()
@@ -63,7 +63,7 @@ final class GraphRequestTests: XCTestCase {
   }
 
   func testConfiguringWithDependencies() {
-    TestAccessTokenWallet.currentAccessToken = SampleAccessTokens.validToken
+    TestAccessTokenWallet.current = SampleAccessTokens.validToken
     let request = GraphRequest(graphPath: path)
 
     XCTAssertTrue(
@@ -285,7 +285,7 @@ final class GraphRequestTests: XCTestCase {
 
   func testSetSettingsWithDebugParamValue() throws {
     let debugParameter = "TestValue"
-    settings.graphAPIDebugParamValue = debugParameter
+    settings.graphAPIDebugParameterValue = debugParameter
     let baseURL = try InternalUtility.shared.facebookURL(
       withHostPrefix: prefix,
       path: path,
